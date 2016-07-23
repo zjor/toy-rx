@@ -1,5 +1,6 @@
 package com.github.zjor.rx;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class Subscription<T> {
@@ -8,9 +9,12 @@ public class Subscription<T> {
 
     private Consumer<T> onNext;
 
-    public Subscription(Observable<T> observable, Consumer<T> onNext) {
+    private Optional<Runnable> onComplete;
+
+    public Subscription(Observable<T> observable, Consumer<T> onNext, Runnable onComplete) {
         this.observable = observable;
         this.onNext = onNext;
+        this.onComplete = Optional.ofNullable(onComplete);
     }
 
     public void unsubscribe() {
@@ -19,6 +23,10 @@ public class Subscription<T> {
 
     protected void onNext(T value) {
         onNext.accept(value);
+    }
+
+    protected void onComplete() {
+        onComplete.ifPresent(Runnable::run);
     }
 
 

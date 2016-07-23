@@ -9,8 +9,8 @@ public class App {
         squares.subscribe(i -> {
             System.out.println(i);
         });
-        ints.onNext(3);
-        ints.onNext(4);
-        ints.onNext(5);
+        ints.next(3);
+        ints.next(4);
+        ints.next(5);
     }
 }
