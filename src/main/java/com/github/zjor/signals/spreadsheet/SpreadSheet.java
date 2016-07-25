@@ -1,7 +1,10 @@
 package com.github.zjor.signals.spreadsheet;
 
-import com.github.zjor.signals.Signal;
 import com.github.zjor.signals.Var;
+import com.github.zjor.signals.spreadsheet.engine.Binary;
+import com.github.zjor.signals.spreadsheet.engine.Expr;
+import com.github.zjor.signals.spreadsheet.engine.LiteralExpr;
+import com.github.zjor.signals.spreadsheet.engine.RefExpr;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,73 +71,13 @@ public class SpreadSheet {
         }
     }
 
-    interface Expr {
-
-        Double eval();
-
-    }
-
-    class LiteralExpr implements Expr {
-        private double value;
-
-        public LiteralExpr(double value) {
-            this.value = value;
-        }
-
-        @Override
-        public Double eval() {
-            return value;
-        }
-    }
-
-    class RefExpr implements Expr {
-
-        private Signal<Double> signal;
-
-        public RefExpr(Signal<Double> signal) {
-            this.signal = signal;
-        }
-
-        @Override
-        public Double eval() {
-            return signal.getValue();
-        }
-    }
-
-    class Binary implements Expr {
-
-        private Expr left;
-        private Expr right;
-        private char operator;
-
-        public Binary(Expr left, Expr right, char operator) {
-            this.left = left;
-            this.right = right;
-            this.operator = operator;
-        }
-
-        @Override
-        public Double eval() {
-            switch (operator) {
-                case '+': return left.eval() + right.eval();
-                case '-': return left.eval() - right.eval();
-                case '*': return left.eval() * right.eval();
-                case '/': return left.eval() / right.eval();
-                default:
-                    throw new IllegalArgumentException("Unknown operator: " + operator);
-            }
-        }
-    }
-
     public static void main(String[] args) {
         SpreadSheet sheet = new SpreadSheet();
         sheet.init();
         sheet.update("a1", "1");
-        sheet.update("b1", "2");
-        sheet.update("a2", "a1+b1");
-        sheet.update("b2", "a2+b1");
+        sheet.update("b1", "a1");
+        sheet.update("a1", "2");
 
-        sheet.update("a1", "3");
     }
 
 }
