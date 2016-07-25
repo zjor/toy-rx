@@ -52,16 +52,13 @@ public class ObservableTest {
         Observable
                 .from(Arrays.asList(events))
                 .flatMap(e -> Observable.just(e.getEvent()).delay(e.getDueTime()))
-                .subscribe(e -> System.out.println(e), () -> System.out.println("done"));
+                .subscribe(e -> System.out.println(e));
 
         Observable
                 .from(Arrays.asList(events))
                 .flatMap(e -> Observable.just(e.getEvent()).delay(e.getDueTime()))
                 .throttle(100)
-                .subscribe(e -> results.add(e), () -> {
-                    future.complete(null);
-                    System.out.println("completed");
-                });
+                .subscribe(e -> results.add(e));
         future.get(1000, TimeUnit.MILLISECONDS);
         System.out.println(results);
 
