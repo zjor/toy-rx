@@ -116,4 +116,10 @@ public class Observable<T> {
         return o;
     }
 
+    public static <S> Observable<S> of(Consumer<Observable<S>> consumer) {
+        Observable<S> o = new Observable<>();
+        consumer.accept(o);
+        return o;
+    }
+
 }

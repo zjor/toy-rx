@@ -18,18 +18,13 @@ public class SpreadSheet {
 
     private Function<String, Double> calculator = expr -> parse(expr).eval();
 
-    private void init() {
-        String[] names = new String[] {
-                "a1", "b1", "a2", "b2"
-        };
-        Arrays.asList(names).forEach(c -> {
-            Cell cell = new Cell(calculator);
-            cells.put(c, cell);
-            cell.getValues().subscribe(value -> System.out.println(value));
-        });
+    public Cell createCell(String name) {
+        Cell cell = new Cell(calculator);
+        cells.put(name.toLowerCase(), cell);
+        return cell;
     }
 
-    public void update(String cell, String expression) {
+    private void update(String cell, String expression) {
         cells.get(cell).update(expression);
     }
 
@@ -60,7 +55,14 @@ public class SpreadSheet {
 
     public static void main(String[] args) {
         SpreadSheet sheet = new SpreadSheet();
-        sheet.init();
+        String[] names = new String[] {
+                "a1", "b1", "a2", "b2"
+        };
+        Arrays.asList(names).forEach(c -> {
+            Cell cell = sheet.createCell(c);
+            cell.getValueStream().subscribe(value -> System.out.println(value));
+        });
+
         sheet.update("a1", "1");
         sheet.update("b1", "a1");
         sheet.update("a1", "2");

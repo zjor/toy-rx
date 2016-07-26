@@ -1,35 +1,24 @@
 package com.github.zjor.signals.spreadsheet;
 
-import com.github.zjor.signals.Var;
-import com.github.zjor.signals.spreadsheet.engine.Binary;
-import com.github.zjor.signals.spreadsheet.engine.Expr;
-import com.github.zjor.signals.spreadsheet.engine.LiteralExpr;
-import com.github.zjor.signals.spreadsheet.engine.RefExpr;
-
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SpreadSheetComponent {
 
-    private List<List<Cell>> cells = new LinkedList<>();
-    private Map<String, Cell> cellsMap = new HashMap<>();
+    private List<List<CellComponent>> cells = new LinkedList<>();
+    private SpreadSheet sheet = new SpreadSheet();
 
     private int rows;
     private int cols;
 
     private void initCells() {
         for (int r = 0; r < rows; r++) {
-            List<Cell> row = new LinkedList<>();
+            List<CellComponent> row = new LinkedList<>();
             for (int c = 0; c < cols; c++) {
-                String cellName = getCellName(r + 1, c);
-                Cell cell = new Cell();
-                cellsMap.put(cellName, cell);
+                String name = getCellName(r + 1, c);
+                CellComponent cell = new CellComponent(sheet.createCell(name));
                 row.add(cell);
             }
             cells.add(row);
@@ -73,63 +62,35 @@ public class SpreadSheetComponent {
         createRowsHeader(container);
 
         for (int r = 0; r < cells.size(); r++) {
-            List<Cell> row = cells.get(r);
+            List<CellComponent> row = cells.get(r);
             for (int c = 0; c < row.size(); c++) {
                 GridBagConstraints constraints = new GridBagConstraints();
                 constraints.weightx = 0.2;
                 constraints.gridx = c + 1;
                 constraints.gridy = r + 1;
                 constraints.fill = GridBagConstraints.HORIZONTAL;
-
-                Cell cell = row.get(c);
-                container.add(cell.getComponent(), constraints);
+                container.add(row.get(c).getComponent(), constraints);
             }
         }
 
         return container;
     }
 
-    private Expr parse(String expression) {
-        if (expression.matches("[-+]?[0-9]*\\.?[0-9]*")) {
-            return new LiteralExpr(Double.parseDouble(expression));
-        }
-
-        if (expression.matches("[A-Za-z][0-9]")) {
-            if (!cellsMap.containsKey(expression)) {
-                throw new IllegalArgumentException(expression + " cell is not present");
-            }
-            return new RefExpr(cellsMap.get(expression).var);
-        }
-
-        if (expression.matches("([A-Za-z][0-9])([+-/\\\\*])([A-Za-z][0-9])")) {
-            Matcher m = Pattern.compile("([A-Za-z][0-9])([+-/\\\\*])([A-Za-z][0-9])").matcher(expression);
-            if (m.find()) {
-                String left = m.group(1);
-                String op = m.group(2);
-                String right = m.group(3);
-                return new Binary(parse(left), parse(right), op.charAt(0));
-            }
-        }
-        throw new IllegalArgumentException("Failed to parse expression: " + expression);
-    }
-
-    private class Cell {
+    private class CellComponent {
         private JTextField exprControl;
         private JLabel valueControl;
 
-        private Var<Double> var;
-
-        public Cell() {
+        public CellComponent(Cell model) {
             exprControl = new JTextField("0.0");
             valueControl = new JLabel("0.0");
-            var = new Var(() -> 0.0);
-
             exprControl.addActionListener(e -> {
-                var.update(() -> {
-                    double value = parse(exprControl.getText()).eval();
-                    valueControl.setText("" + value);
-                    return value;
-                });
+                cells.stream().flatMap(l -> l.stream()).forEach(c -> c.valueControl.setForeground(Color.BLACK));
+                model.getExprStream().next(exprControl.getText());
+                valueControl.setForeground(Color.RED);
+            });
+            model.getValueStream().subscribe(value -> {
+                valueControl.setText(value);
+                valueControl.setForeground(Color.GREEN);
             });
         }
 

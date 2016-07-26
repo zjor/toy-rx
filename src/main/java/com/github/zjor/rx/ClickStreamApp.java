@@ -19,8 +19,7 @@ public class ClickStreamApp extends JFrame {
         getContentPane().add(button, BorderLayout.NORTH);
         getContentPane().add(label, BorderLayout.SOUTH);
 
-        Observable<Integer> clickStream = new Observable<>();
-        button.addActionListener(e -> clickStream.next(1));
+        Observable<Integer> clickStream = Observable.of(o -> button.addActionListener(e -> o.next(1)));
         clickStream.fold(0, (a, b) -> a + b).subscribe(n -> label.setText("Clicks count: " + n));
     }
 

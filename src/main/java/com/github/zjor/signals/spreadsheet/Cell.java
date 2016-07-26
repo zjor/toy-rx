@@ -34,7 +34,11 @@ public class Cell {
         return signal;
     }
 
-    public Observable<String> getValues() {
+    public Observable<String> getValueStream() {
         return valueStream;
+    }
+
+    public Observable<String> getExprStream() {
+        return exprStream;
     }
 }
