@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -89,6 +90,18 @@ public class Observable<T> {
         Observable<T> delayed = new Observable<>();
         subscribe(value -> SCHEDULER.schedule(() -> delayed.next(value), delay, TimeUnit.MILLISECONDS));
         return delayed;
+    }
+
+    public <S> Observable<S> fold(S zero, BiFunction<S, T, S> combinator) {
+        Observable<S> folded = new Observable<>();
+        ValueHolder<S> accumulator = new ValueHolder<>(zero);
+
+        subscribe(value -> {
+            accumulator.setValue(combinator.apply(accumulator.getValue(), value));
+            folded.next(accumulator.getValue());
+        });
+
+        return folded;
     }
 
     public static <S> Observable<S> just(S event) {

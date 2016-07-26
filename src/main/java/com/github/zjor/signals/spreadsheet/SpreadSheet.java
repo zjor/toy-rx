@@ -1,13 +1,14 @@
 package com.github.zjor.signals.spreadsheet;
 
-import com.github.zjor.signals.Var;
 import com.github.zjor.signals.spreadsheet.engine.Binary;
 import com.github.zjor.signals.spreadsheet.engine.Expr;
 import com.github.zjor.signals.spreadsheet.engine.LiteralExpr;
 import com.github.zjor.signals.spreadsheet.engine.RefExpr;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,11 +16,17 @@ public class SpreadSheet {
 
     private Map<String, Cell> cells = new HashMap<>();
 
+    private Function<String, Double> calculator = expr -> parse(expr).eval();
+
     private void init() {
-        cells.put("a1", new Cell("0", new Var<>(() -> 0.0)));
-        cells.put("b1", new Cell("0", new Var<>(() -> 0.0)));
-        cells.put("a2", new Cell("0", new Var<>(() -> 0.0)));
-        cells.put("b2", new Cell("0", new Var<>(() -> 0.0)));
+        String[] names = new String[] {
+                "a1", "b1", "a2", "b2"
+        };
+        Arrays.asList(names).forEach(c -> {
+            Cell cell = new Cell(calculator);
+            cells.put(c, cell);
+            cell.getValues().subscribe(value -> System.out.println(value));
+        });
     }
 
     public void update(String cell, String expression) {
@@ -32,8 +39,11 @@ public class SpreadSheet {
         }
 
         if (expression.matches("[A-Za-z][0-9]")) {
-            //TODO: check nonexistence
-            return new RefExpr(cells.get(expression).var);
+            expression = expression.toLowerCase();
+            if (!cells.containsKey(expression)) {
+                throw new IllegalArgumentException("Cell " + expression + " doesn't exist");
+            }
+            return new RefExpr(cells.get(expression).getSignal());
         }
 
         if (expression.matches("([A-Za-z][0-9])([+-/\\\\*])([A-Za-z][0-9])")) {
@@ -46,29 +56,6 @@ public class SpreadSheet {
             }
         }
         throw new IllegalArgumentException("Failed to parse expression: " + expression);
-    }
-
-    class Cell {
-
-        private String expr;
-
-        private Var<Double> var;
-
-        public Cell(String expr, Var<Double> var) {
-            this.expr = expr;
-            this.var = var;
-        }
-
-        private void update(String expr) {
-            this.expr = expr;
-            var.update(() -> {
-                double value = parse(expr).eval();
-                System.out.println("Recalculated value: " + value);
-                return value;
-            });
-
-
-        }
     }
 
     public static void main(String[] args) {
