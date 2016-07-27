@@ -1,14 +1,17 @@
 package com.github.zjor.signals.spreadsheet.engine;
 
-public class LiteralExpr implements Expr {
-    private double value;
+import java.util.Optional;
 
-    public LiteralExpr(double value) {
+public class LiteralExpr implements Expr {
+
+    private Double value;
+
+    public LiteralExpr(Double value) {
         this.value = value;
     }
 
     @Override
-    public Double eval() {
-        return value;
+    public Optional<Double> eval() {
+        return Optional.ofNullable(value);
     }
 }

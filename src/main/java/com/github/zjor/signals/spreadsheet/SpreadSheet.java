@@ -8,6 +8,7 @@ import com.github.zjor.signals.spreadsheet.engine.RefExpr;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,7 +17,7 @@ public class SpreadSheet {
 
     private Map<String, Cell> cells = new HashMap<>();
 
-    private Function<String, Double> calculator = expr -> parse(expr).eval();
+    private Function<String, Optional<Double>> calculator = expr -> parse(expr).eval();
 
     public Cell createCell(String name) {
         Cell cell = new Cell(calculator);
@@ -29,6 +30,10 @@ public class SpreadSheet {
     }
 
     private Expr parse(String expression) {
+        if (expression == null || expression.length() == 0) {
+            return new LiteralExpr(null);
+        }
+
         if (expression.matches("[-+]?[0-9]*\\.?[0-9]*")) {
             return new LiteralExpr(Double.parseDouble(expression));
         }
@@ -66,6 +71,7 @@ public class SpreadSheet {
         sheet.update("a1", "1");
         sheet.update("b1", "a1");
         sheet.update("a1", "2");
+        sheet.update("a1", null);
 
     }
 

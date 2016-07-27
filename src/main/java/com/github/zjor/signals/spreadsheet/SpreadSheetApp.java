@@ -1,11 +1,15 @@
 package com.github.zjor.signals.spreadsheet;
 
+import com.github.zjor.ui.util.CenteredWindow;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SpreadSheetComponent {
+public class SpreadSheetApp extends CenteredWindow {
+
+    private static final Color GREEN_COLOR = new Color(0, 150, 0);
 
     private List<List<CellComponent>> cells = new LinkedList<>();
     private SpreadSheet sheet = new SpreadSheet();
@@ -25,10 +29,12 @@ public class SpreadSheetComponent {
         }
     }
 
-    public SpreadSheetComponent(int rows, int cols) {
+    public SpreadSheetApp(int rows, int cols) {
+        super("Reactive SpreadSheet Example", 800, 600);
         this.rows = rows;
         this.cols = cols;
         initCells();
+        getContentPane().add(render(), BorderLayout.CENTER);
     }
 
     private void createColsHeader(Container container) {
@@ -69,6 +75,7 @@ public class SpreadSheetComponent {
                 constraints.gridx = c + 1;
                 constraints.gridy = r + 1;
                 constraints.fill = GridBagConstraints.HORIZONTAL;
+                constraints.insets = new Insets(3, 3, 3, 3);
                 container.add(row.get(c).getComponent(), constraints);
             }
         }
@@ -81,16 +88,22 @@ public class SpreadSheetComponent {
         private JLabel valueControl;
 
         public CellComponent(Cell model) {
-            exprControl = new JTextField("0.0");
-            valueControl = new JLabel("0.0");
+            exprControl = new JTextField();
+            exprControl.setMinimumSize(new Dimension(128, 32));
+            exprControl.setPreferredSize(new Dimension(128, 32));
+
+            valueControl = new JLabel();
+            valueControl.setMinimumSize(new Dimension(64, 32));
+            valueControl.setPreferredSize(new Dimension(64, 32));
+
             exprControl.addActionListener(e -> {
                 cells.stream().flatMap(l -> l.stream()).forEach(c -> c.valueControl.setForeground(Color.BLACK));
                 model.getExprStream().next(exprControl.getText());
                 valueControl.setForeground(Color.RED);
             });
             model.getValueStream().subscribe(value -> {
-                valueControl.setText(value);
-                valueControl.setForeground(Color.GREEN);
+                valueControl.setText(value.orElse("NaN"));
+                valueControl.setForeground(GREEN_COLOR);
             });
         }
 
@@ -98,7 +111,15 @@ public class SpreadSheetComponent {
             JPanel pane = new JPanel(new BorderLayout());
             pane.add(exprControl, BorderLayout.CENTER);
             pane.add(valueControl, BorderLayout.EAST);
+            pane.setBorder(BorderFactory.createLoweredSoftBevelBorder());
+
+
             return pane;
         }
+    }
+
+    public static void main(String[] args) {
+        SpreadSheetApp app = new SpreadSheetApp(5, 4);
+        app.setVisible(true);
     }
 }

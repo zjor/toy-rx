@@ -1,5 +1,7 @@
 package com.github.zjor.signals.spreadsheet.engine;
 
+import java.util.Optional;
+
 public class Binary implements Expr {
 
     private Expr left;
@@ -13,14 +15,16 @@ public class Binary implements Expr {
     }
 
     @Override
-    public Double eval() {
-        switch (operator) {
-            case '+': return left.eval() + right.eval();
-            case '-': return left.eval() - right.eval();
-            case '*': return left.eval() * right.eval();
-            case '/': return left.eval() / right.eval();
-            default:
-                throw new IllegalArgumentException("Unknown operator: " + operator);
-        }
+    public Optional<Double> eval() {
+        return left.eval().flatMap(l -> right.eval().map(r -> {
+            switch (operator) {
+                case '+': return l + r;
+                case '-': return l - r;
+                case '*': return l * r;
+                case '/': return l / r;
+                default:
+                    throw new IllegalArgumentException("Unknown operator: " + operator);
+            }
+        }));
     }
 }
