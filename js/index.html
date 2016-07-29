@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+	<script src="signals.js"></script>
+	<script src="calculator.js"></script>
+	<style>
+
+	input:focus {
+		outline: none;
+	}
+
+	.col {
+		display: inline-block;
+		width: 104px;
+		padding: 4px;
+	}
+
+	.row {
+		margin-bottom: 4px;
+	}
+
+	.row-num {
+		width: 24px;
+		text-align: right;
+	}
+
+	.col-name {
+		text-align: center;
+	}
+
+	.cell {
+		border: 1px solid black;
+		
+	}
+	.cell input[type=text] {
+		width: 64px;
+		border: none;
+	}
+
+	.cell span {
+		display: inline-block;
+		width: 32px;
+		text-align: right;
+	}
+
+	</style>
+</head>
+<body>
+	<div class="row">
+		<div class="col row-num"></div>
+		<div class="col col-name">A</div>
+		<div class="col col-name">B</div>
+		<div class="col col-name">C</div>
+	</div>
+	<div class="row">
+		<div class="col row-num">1</div>
+		<div class="col cell">
+			<input type="text" id="a1" value="0"/>
+			<span sig-id="a1"></span>
+		</div>
+
+		<div class="col cell">
+			<input type="text" id="b1" value="0"/>
+			<span sig-id="b1"></span>
+		</div>
+
+		<div class="col cell">
+			<input type="text" id="c1" value="0"/>
+			<span sig-id="c1"></span>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col row-num">2</div>
+		<div class="col cell">
+			<input type="text" id="a2" value="0"/>
+			<span sig-id="a2"></span>
+		</div>
+
+		<div class="col cell">
+			<input type="text" id="b2" value="0"/>
+			<span sig-id="b2"></span>
+		</div>
+
+		<div class="col cell">
+			<input type="text" id="c2" value="0"/>
+			<span sig-id="c2"></span>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col row-num">3</div>
+		<div class="col cell">
+			<input type="text" id="a3" value="0"/>
+			<span sig-id="a3"></span>
+		</div>
+
+		<div class="col cell">
+			<input type="text" id="b3" value="0"/>
+			<span sig-id="b3"></span>
+		</div>
+
+		<div class="col cell">
+			<input type="text" id="c3" value="0"/>
+			<span sig-id="c3"></span>
+		</div>
+	</div>	
+
+	<script>
+
+$(function() {
+	var vars = {};
+
+	function ord(c) {
+		return c.charCodeAt(0);
+	}
+
+	function chr(code) {
+		return String.fromCharCode(code);
+	}
+
+	function initVars(){
+		for (var r = 0; r < 3; r++) {
+			for (var c = 0; c < 3; c++) {
+				var name = chr(ord('a') + c) + (r + 1);
+				vars[name] = new Var(function() {return 0;});
+			}
+		}
+	};
+	initVars();	
+
+	function evaluate(expr) {
+		return parse(expr, vars).getValue();
+	};
+
+	$('input').change(function(e) {
+		vars[e.target.id].update(function() {
+			var value = evaluate(e.target.value);
+			console.log(e.target.id + " updated to " + value);
+			var selector = "span[sig-id=" + e.target.id + "]";
+			$(selector).text(value);
+			return value; 
+		});
+		
+	});
+
+});
+
+	</script>
+
+</body>
+</html>
