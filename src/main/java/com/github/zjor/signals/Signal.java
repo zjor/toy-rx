@@ -47,9 +47,9 @@ public class Signal<T> {
         if (newValue != value) {
             value = newValue;
 
-            Collection<Signal<?>> oldCallers = new LinkedList<>(observers);
+            Collection<Signal<?>> oldObservers = new LinkedList<>(observers);
             observers.clear();
-            oldCallers.forEach(caller -> caller.evaluate());
+            oldObservers.forEach(caller -> caller.evaluate());
 
         }
         caller.removeLast();

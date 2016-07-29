@@ -12,7 +12,6 @@ TODO
 ====
 
  - implement proper stream completion to wait for timed streams to terminate
- - implement merge, zip
- - implement timed modifiers (e.g. throttle, buffers, debounce)
+ - implement buffer
  - implement simple UI app converting stream of clicks into stream of double clicks, long-clicks
- - implement simple spreadsheet calculator with dynamic subscription changes 
+ - make an Applet from SpreadSheetApp, host jar somewhere & embed here

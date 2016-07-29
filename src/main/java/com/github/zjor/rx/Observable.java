@@ -86,6 +86,25 @@ public class Observable<T> {
         return throttled;
     }
 
+    public Observable<T> debounce(long dueTime) {
+        Observable<T> debounced = new Observable<>();
+        ValueHolder<T> lastValue = new ValueHolder<>(null);
+        AtomicBoolean inProgress = new AtomicBoolean(false);
+        subscribe(value -> {
+            lastValue.setValue(value);
+            if (!inProgress.get()) {
+                SCHEDULER.submit(() -> {
+                    inProgress.set(true);
+                    Thread.sleep(dueTime);
+                    inProgress.set(false);
+                    debounced.next(lastValue.getValue());
+                    return null;
+                });
+            }
+        });
+        return debounced;
+    }
+
     public Observable<T> delay(long delay) {
         Observable<T> delayed = new Observable<>();
         subscribe(value -> SCHEDULER.schedule(() -> delayed.next(value), delay, TimeUnit.MILLISECONDS));
@@ -120,6 +139,33 @@ public class Observable<T> {
         Observable<S> o = new Observable<>();
         consumer.accept(o);
         return o;
+    }
+
+    public static <S> Observable<S> merge(Observable<S> o1, Observable<S> o2) {
+        Observable<S> merged = new Observable<>();
+        o1.subscribe(value -> merged.next(value));
+        o2.subscribe(value -> merged.next(value));
+        return merged;
+    }
+
+    public static <A, B> Observable<Pair<A, B>> zip(Observable<A> z1, Observable<B> z2) {
+        LinkedList<A> firstCache = new LinkedList<>();
+        LinkedList<B> secondCache = new LinkedList<>();
+        Observable<Pair<A, B>> zipped = new Observable<>();
+
+        z1.subscribe(value -> {
+            firstCache.push(value);
+            if (!secondCache.isEmpty()) {
+                zipped.next(Pair.of(firstCache.poll(), secondCache.poll()));
+            }
+        });
+        z2.subscribe(value -> {
+            secondCache.push(value);
+            if (!firstCache.isEmpty()) {
+                zipped.next(Pair.of(firstCache.poll(), secondCache.poll()));
+            }
+        });
+        return zipped;
     }
 
 }
