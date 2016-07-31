@@ -37,14 +37,16 @@ Binary.prototype.getValue = function() {
 }
 
 function parse(expr, refs) {
+	var doubleRe = /^[-+]?[0-9]*\.?[0-9]*$/;
+	var refRe = /^[A-Za-z][0-9]$/;
+	var exprRe = /^([A-Za-z][0-9])([+-\\*])([A-Za-z][0-9])$/;
 
-	if (/^[-+]?[0-9]*\.?[0-9]*$/.test(expr)) {		
+	if (doubleRe.test(expr)) {
 		return new Literal(parseFloat(expr));
-	} else if (/^[A-Za-z][0-9]$/.test(expr)) {
+	} else if (refRe.test(expr)) {
 		return new Reference(expr.toLowerCase(), refs);
-	} else if (/^([A-Za-z][0-9])([+-\\*])([A-Za-z][0-9])$/.test(expr)) {
-		var re = /^([A-Za-z][0-9])([+-\\*])([A-Za-z][0-9])$/;
-		var m = re.exec(expr);
+	} else if (exprRe.test(expr)) {
+		var m = exprRe.exec(expr);
 		return new Binary(parse(m[1], refs), parse(m[3], refs), m[2]);
 	} else {
 		throw "Unable to parse expression: " + expr;
